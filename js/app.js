@@ -3,7 +3,7 @@ import { buildManualFlight, lookupFlight, displayTime, normalizeFlightNumber } f
 import { deleteFlight, getAllFlights, saveFlight } from "./db.js";
 import { escapeHtml } from "./util.js";
 import { activateGlobe, deactivateGlobe, updateGlobe } from "./globe.js";
-import { initAuth, onAuthChange, sendMagicLink, signOut } from "./auth.js";
+import { initAuth, onAuthChange, sendMagicLink, signInWithGoogle, signOut } from "./auth.js";
 
 const views = {
   add: document.getElementById("view-add"),
@@ -30,8 +30,10 @@ const listEmpty = document.getElementById("list-empty");
 const listCount = document.getElementById("list-count");
 
 const loginView = document.getElementById("view-login");
+const googleSignInButton = document.getElementById("google-sign-in");
 const loginForm = document.getElementById("login-form");
 const loginEmailInput = document.getElementById("login-email");
+const emailSignInButton = document.getElementById("email-sign-in");
 const loginStatus = document.getElementById("login-status");
 const accountBar = document.getElementById("account-bar");
 const signOutButton = document.getElementById("sign-out");
@@ -628,22 +630,58 @@ function setLoginStatus(message, type = "") {
   loginStatus.className = `status ${type}`.trim();
 }
 
+const EMAIL_BUTTON_LABEL = emailSignInButton.textContent;
+const RESEND_COOLDOWN_SECONDS = 60;
+let cooldownTimer = null;
+
+function startEmailCooldown() {
+  let remaining = RESEND_COOLDOWN_SECONDS;
+  emailSignInButton.disabled = true;
+  emailSignInButton.textContent = `Resend in ${remaining}s`;
+  clearInterval(cooldownTimer);
+  cooldownTimer = setInterval(() => {
+    remaining -= 1;
+    if (remaining <= 0) {
+      clearInterval(cooldownTimer);
+      emailSignInButton.disabled = false;
+      emailSignInButton.textContent = EMAIL_BUTTON_LABEL;
+      return;
+    }
+    emailSignInButton.textContent = `Resend in ${remaining}s`;
+  }, 1000);
+}
+
+function friendlyAuthError(error) {
+  const message = error?.message || "";
+  if (/rate limit/i.test(message)) {
+    return "Too many sign-in emails were sent. Wait a bit, or continue with Google instead.";
+  }
+  return message || "Something went wrong. Try again.";
+}
+
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const email = loginEmailInput.value.trim();
   if (!email) return;
 
-  const button = loginForm.querySelector("button");
-  button.disabled = true;
+  emailSignInButton.disabled = true;
   setLoginStatus("Sending…");
-
   try {
     await sendMagicLink(email);
-    setLoginStatus("Check your email for a sign-in link.", "ok");
+    setLoginStatus(`Check ${email} for your sign-in link.`, "ok");
+    startEmailCooldown();
   } catch (error) {
-    setLoginStatus(error.message || "Couldn't send the link. Try again.", "error");
-  } finally {
-    button.disabled = false;
+    setLoginStatus(friendlyAuthError(error), "error");
+    emailSignInButton.disabled = false;
+  }
+});
+
+googleSignInButton.addEventListener("click", async () => {
+  setLoginStatus("Redirecting to Google…");
+  try {
+    await signInWithGoogle();
+  } catch (error) {
+    setLoginStatus(friendlyAuthError(error), "error");
   }
 });
 

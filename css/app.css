@@ -310,6 +310,53 @@ input:focus,
   opacity: 0.6;
 }
 
+#view-login {
+  width: min(28rem, 100%);
+  margin: 0 auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.btn.google {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.btn.google:hover,
+.btn.google:focus-visible {
+  background: var(--accent-soft);
+}
+
+.btn.google:disabled {
+  opacity: 0.6;
+}
+
 .btn.danger {
   width: 100%;
   margin-top: 0.85rem;
