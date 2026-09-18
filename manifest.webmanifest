@@ -1,0 +1,16 @@
+{
+  "name": "Flight Passport",
+  "short_name": "Passport",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#185FA5",
+  "background_color": "#eef3f8",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

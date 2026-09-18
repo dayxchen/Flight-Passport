@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#185FA5" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Flight Passport" />
+    <title>Flight Passport</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/icon.svg" />
+    <link rel="stylesheet" href="./css/app.css" />
+  </head>
+  <body>
+    <div class="app">
+      <section id="view-login" class="screen" aria-label="Sign in" hidden>
+        <div class="prompt">
+          <h1>Flight Passport</h1>
+          <p>Sign in with your email to see your flights</p>
+        </div>
+        <form id="login-form" class="stack">
+          <label class="field">
+            Email
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+            />
+          </label>
+          <button class="btn primary" type="submit">Send magic link</button>
+        </form>
+        <p id="login-status" class="status" role="status"></p>
+      </section>
+
+      <div id="account-bar" class="account-bar" hidden>
+        <button id="sign-out" type="button">Sign out</button>
+      </div>
+
+      <nav class="topbar" aria-label="Views" hidden>
+        <button class="tab is-active" type="button" data-view="add" aria-selected="true">Add Flight</button>
+        <button class="tab" type="button" data-view="list" aria-selected="false">My Flights</button>
+        <button class="tab" type="button" data-view="globe" aria-selected="false">Globe</button>
+      </nav>
+
+      <main hidden>
+        <section id="view-add" class="screen" aria-label="Add flight">
+          <div class="prompt">
+            <h1 id="add-title">Add a flight</h1>
+            <p id="add-subtitle">Enter the flight number and date</p>
+          </div>
+
+          <form id="lookup-form" class="stack">
+            <label class="field">
+              Flight number
+              <input
+                id="flight-number"
+                name="flightNumber"
+                inputmode="text"
+                autocomplete="off"
+                autocapitalize="characters"
+                placeholder="UA123"
+                required
+              />
+            </label>
+            <label class="field">
+              Date
+              <button type="button" id="date-trigger" class="picker-trigger" aria-haspopup="dialog" aria-expanded="false">
+                Choose a date
+              </button>
+              <input id="flight-date" name="flightDate" type="hidden" required />
+            </label>
+            <div id="calendar" class="picker-panel" hidden role="dialog" aria-label="Choose flight date">
+              <div class="cal-header">
+                <button type="button" id="cal-prev" class="cal-nav" aria-label="Previous month">‹</button>
+                <p id="cal-title" class="cal-title"></p>
+                <button type="button" id="cal-next" class="cal-nav" aria-label="Next month">›</button>
+              </div>
+              <div class="cal-weekdays" aria-hidden="true">
+                <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+              </div>
+              <div id="cal-days" class="cal-days"></div>
+            </div>
+            <button id="search-flight" class="btn primary" type="submit" hidden>Search</button>
+          </form>
+
+          <p id="lookup-status" class="status" role="status"></p>
+          <div id="flight-preview" hidden></div>
+        </section>
+
+        <section id="view-list" class="screen" aria-label="My flights" hidden>
+          <div class="prompt">
+            <h1>My flights</h1>
+            <p id="list-count" hidden>0 flights</p>
+          </div>
+          <p id="list-empty" class="empty">No flights added yet</p>
+          <div id="flight-list" class="flight-list"></div>
+        </section>
+
+        <section id="view-globe" class="screen" aria-label="Flight globe" hidden>
+          <p id="globe-status" class="status"></p>
+          <p id="globe-empty" class="empty" hidden>No flights yet — add one to see it on the globe</p>
+          <button type="button" id="globe-add-cta" class="btn primary" hidden>Add a flight</button>
+          <div id="globe-wrap" class="globe-wrap" hidden>
+            <div id="globe-stage" class="globe-stage"></div>
+            <div id="globe-detail" class="globe-detail" hidden role="status" aria-live="polite"></div>
+          </div>
+          <p id="globe-skipped" class="status" hidden></p>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

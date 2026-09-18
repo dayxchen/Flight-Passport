@@ -1,0 +1,551 @@
+:root {
+  color-scheme: light;
+  --bg: #eef3f8;
+  --surface: #ffffff;
+  --ink: #102033;
+  --muted: #5b6b7c;
+  --line: #d7e0ea;
+  --accent: #185fa5;
+  --accent-soft: #e7f1fb;
+  --accent-hover: #134c85;
+  --danger: #b42318;
+  --ok: #17663a;
+  --shadow: 0 12px 40px rgba(16, 32, 51, 0.08);
+  --radius: 22px;
+  --globe-arc: #f6a04d;
+  --globe-arc-dim: rgba(246, 160, 77, 0.22);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--safe-top) 0 var(--safe-bottom);
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  width: min(28rem, 100%);
+  margin: 0 auto;
+  padding: 0.7rem 1.25rem 0.35rem;
+}
+
+.account-bar {
+  width: min(28rem, 100%);
+  margin: 0 auto;
+  padding: 0.5rem 1.25rem 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.account-bar button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: 600 0.82rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  padding: 0.3rem 0.4rem;
+}
+
+.account-bar button:hover,
+.account-bar button:focus-visible {
+  color: var(--accent);
+}
+
+main {
+  flex: 1;
+  width: min(28rem, 100%);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 4.5rem - var(--safe-top) - var(--safe-bottom));
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.5rem 0 1rem;
+}
+
+#view-list.screen:not(:has(#list-empty[hidden])) {
+  justify-content: center;
+}
+
+#view-list.screen:has(#flight-list:not(:empty)) {
+  justify-content: flex-start;
+  padding-top: 0.75rem;
+}
+
+
+.prompt {
+  text-align: center;
+}
+
+.prompt h1 {
+  margin: 0;
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.prompt p {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+
+.stack,
+.form-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+}
+
+input,
+.picker-trigger {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0.95rem 1rem;
+  font: 1.05rem/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.picker-trigger {
+  text-align: center;
+  cursor: pointer;
+}
+
+.picker-trigger.is-empty {
+  color: var(--muted);
+}
+
+input:focus,
+.picker-trigger:focus-visible,
+.cal-nav:focus-visible,
+.cal-day:focus-visible,
+.time-cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.picker-panel {
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.cal-header {
+  display: grid;
+  grid-template-columns: 3.4rem 1fr 3.4rem;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.7rem;
+}
+
+.cal-title {
+  margin: 0;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.cal-nav,
+.period {
+  height: 2.4rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.period {
+  width: 100%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.period.is-selected,
+.cal-nav:active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cal-weekdays,
+.cal-days,
+.time-hours,
+.time-mins {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.cal-weekdays,
+.cal-days,
+.time-hours {
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.time-hours {
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 0.75rem;
+}
+
+.time-mins {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.cal-weekdays span,
+.time-label {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.time-label {
+  display: block;
+  margin: 0 0 0.4rem;
+}
+
+.cal-weekdays span {
+  padding: 0.15rem 0 0.35rem;
+}
+
+.cal-day,
+.time-cell {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: 650 0.88rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.cal-day.is-muted {
+  color: #b7c0c9;
+  font-weight: 500;
+}
+
+.cal-day.is-today,
+.time-cell.is-now {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.cal-day.is-selected,
+.time-cell.is-selected {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: none;
+}
+
+.btn {
+  appearance: none;
+  border: 0;
+  border-radius: 16px;
+  padding: 1rem 1rem;
+  font: 700 1rem/1.1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.btn.primary {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn.primary:hover,
+.btn.primary:focus-visible {
+  background: var(--accent-hover);
+}
+
+.btn.primary:disabled {
+  opacity: 0.6;
+}
+
+.btn.danger {
+  width: 100%;
+  margin-top: 0.85rem;
+  background: transparent;
+  color: var(--danger);
+}
+
+.btn-text {
+  width: 100%;
+  margin-top: 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: 650 0.9rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.status {
+  min-height: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.status.error {
+  color: var(--accent);
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+#flight-preview {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+#airport-hint {
+  min-height: 1.2rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+#flight-preview h2,
+.list-head h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.details {
+  margin: 0;
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.detail-row {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.detail-row dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.detail-row dd {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.time-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.empty {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.flight-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.flight-card {
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.flight-summary {
+  width: 100%;
+  display: grid;
+  gap: 0.15rem;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 1rem 1.05rem;
+  cursor: pointer;
+  color: inherit;
+}
+
+.flight-date {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.flight-title {
+  font-weight: 700;
+}
+
+.flight-route {
+  letter-spacing: 0.04em;
+}
+
+.badge {
+  justify-self: start;
+  margin-top: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.flight-extra {
+  padding: 0 1rem 1rem;
+}
+
+#globe-add-cta {
+  width: auto;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+}
+
+.globe-wrap {
+  position: relative;
+  /* width, height and centering are set in JS (globe.js resizeSquare) so
+     the globe can grow past the app's narrow `main` column on wide
+     screens instead of being capped at it. */
+}
+
+.globe-stage {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.globe-stage canvas {
+  display: block;
+}
+
+.globe-detail {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: var(--surface);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  z-index: 1;
+}
+
+.globe-detail-close {
+  float: right;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: 700 1.1rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  padding: 0;
+}
+
+.globe-detail h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.globe-detail ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.globe-detail li {
+  font-size: 0.9rem;
+}
+
+.tab {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 14px;
+  padding: 0.8rem 0.3rem;
+  font: 700 0.82rem/1.15 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tab.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@media (min-width: 520px) {
+  .time-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
