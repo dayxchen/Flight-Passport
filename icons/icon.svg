@@ -1,4 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Flight Passport">
   <rect width="128" height="128" rx="28" fill="#185FA5"/>
-  <path fill="#eef3f8" d="M24 70h32l18-28 8 4-10 24h22l10-12 7 4-8 16 8 16-7 4-10-12H72l10 24-8 4-18-28H24z"/>
+  <path fill="none" stroke="#eef3f8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" d="M 68 74 C 44 82, 20 78, 14 96 C 9 111, 24 118, 34 106 C 40 99, 30 92, 22 97"/>
+  <g fill="#eef3f8" transform="translate(56.8,27) scale(2.5) rotate(45,12,12)">
+    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2.5 1.5V22l4-1 4 1v-1.5L13 19v-5.5l8 2.5z"/>
+  </g>
 </svg>
