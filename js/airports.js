@@ -68,6 +68,36 @@ export function lookupCoords(iata, icao) {
   return coords[iataKey] || coords[icaoKey] || null;
 }
 
+let countries = null;
+let countriesLoadPromise = null;
+
+export function loadAirportCountries() {
+  if (countries) return Promise.resolve(countries);
+  if (!countriesLoadPromise) {
+    countriesLoadPromise = fetch("./data/airport-country.json")
+      .then((response) => {
+        if (!response.ok) throw new Error("Airport country data failed to load");
+        return response.json();
+      })
+      .then((data) => {
+        countries = data;
+        return countries;
+      })
+      .catch(() => {
+        countries = {};
+        return countries;
+      });
+  }
+  return countriesLoadPromise;
+}
+
+export function lookupCountry(iata, icao) {
+  if (!countries) return null;
+  const iataKey = (iata || "").toUpperCase();
+  const icaoKey = (icao || "").toUpperCase();
+  return countries[iataKey] || countries[icaoKey] || null;
+}
+
 export function resolveAirport(endpoint) {
   const raw = endpoint || {};
   const fromApiIata = (raw.iata || "").toUpperCase();

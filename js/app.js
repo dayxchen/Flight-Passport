@@ -3,12 +3,16 @@ import { buildManualFlight, lookupFlight, displayTime, normalizeFlightNumber } f
 import { deleteFlight, getAllFlights, saveFlight } from "./db.js";
 import { escapeHtml } from "./util.js";
 import { activateGlobe, deactivateGlobe, updateGlobe } from "./globe.js";
+import { initStats, updateStats } from "./stats.js";
+import { groupIntoTrips } from "./trips.js";
 import { initAuth, onAuthChange, sendMagicLink, signInWithGoogle, signOut } from "./auth.js";
+import { initThemeToggle } from "./theme.js";
 
 const views = {
   add: document.getElementById("view-add"),
   list: document.getElementById("view-list"),
   globe: document.getElementById("view-globe"),
+  stats: document.getElementById("view-stats"),
 };
 
 const tabs = document.querySelectorAll(".tab");
@@ -374,12 +378,12 @@ async function onSave() {
   setView("list");
 }
 
-function flightCard(flight) {
+function flightCard(flight, { inTrip = false } = {}) {
   const origin = flight.departureIata || flight.departureIcao || "—";
   const destination = flight.arrivalIata || flight.arrivalIcao || "—";
   const route = `${origin} → ${destination}`;
   const article = document.createElement("article");
-  article.className = "flight-card";
+  article.className = inTrip ? "flight-card in-trip" : "flight-card";
   article.innerHTML = `
     <button type="button" class="flight-summary" aria-expanded="false">
       <span class="flight-date">${escapeHtml(flight.flightDate)}</span>
@@ -417,6 +421,42 @@ function flightCard(flight) {
   return article;
 }
 
+const tripDateFmt = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" });
+const tripDateFmtWithYear = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" });
+
+function formatTripDates(startIso, endIso) {
+  if (!startIso) return "";
+  const start = parseISODate(startIso);
+  if (!endIso || endIso === startIso) return tripDateFmtWithYear.format(start);
+  const end = parseISODate(endIso);
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const startLabel = sameYear ? tripDateFmt.format(start) : tripDateFmtWithYear.format(start);
+  return `${startLabel} – ${tripDateFmtWithYear.format(end)}`;
+}
+
+function tripRouteLabel(routeCodes) {
+  if (routeCodes.length === 3 && routeCodes[0] === routeCodes[2]) {
+    return `${routeCodes[0]} ⇄ ${routeCodes[1]}`;
+  }
+  return routeCodes.join(" → ");
+}
+
+function tripCard(trip) {
+  const article = document.createElement("article");
+  article.className = "trip-card";
+  article.innerHTML = `
+    <div class="trip-header">
+      <span class="trip-dates">${escapeHtml(formatTripDates(trip.startDate, trip.endDate))}</span>
+      <h2 class="trip-route">${escapeHtml(tripRouteLabel(trip.routeCodes))}</h2>
+      <span class="badge">${trip.flights.length} flights</span>
+    </div>
+    <div class="trip-legs"></div>
+  `;
+  const legsEl = article.querySelector(".trip-legs");
+  trip.flights.forEach((flight) => legsEl.appendChild(flightCard(flight, { inTrip: true })));
+  return article;
+}
+
 async function renderList() {
   let flights;
   try {
@@ -435,8 +475,17 @@ async function renderList() {
   listEmpty.hidden = !empty;
   listCount.hidden = empty;
   listCount.textContent = flights.length === 1 ? "1 flight" : `${flights.length} flights`;
-  flights.forEach((flight) => flightList.appendChild(flightCard(flight)));
+
+  const trips = groupIntoTrips(flights).sort((a, b) => {
+    return (b.endDate || "").localeCompare(a.endDate || "") || (b.startDate || "").localeCompare(a.startDate || "");
+  });
+  trips.forEach((trip) => {
+    const el = trip.flights.length > 1 ? tripCard(trip) : flightCard(trip.flights[0]);
+    flightList.appendChild(el);
+  });
+
   updateGlobe(flights);
+  updateStats(flights);
 }
 
 function notFoundMessage(flightDate) {
@@ -619,6 +668,7 @@ function showLogin() {
   // Don't leave the previous user's flights in the DOM or on the globe.
   flightList.replaceChildren();
   updateGlobe([]);
+  updateStats([]);
   loginView.hidden = false;
   accountBar.hidden = true;
   topbar.hidden = true;
@@ -695,3 +745,5 @@ onAuthChange((session) => {
   }
 });
 initAuth();
+initThemeToggle();
+initStats();

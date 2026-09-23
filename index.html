@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#185FA5" />
+    <script>
+      // Applied synchronously, before the stylesheet paints, so a stored
+      // dark preference doesn't flash light on first load.
+      (function () {
+        try {
+          var stored = localStorage.getItem("fp-theme");
+          if (stored === "dark" || stored === "light") {
+            document.documentElement.setAttribute("data-theme", stored);
+          }
+        } catch (e) {}
+      })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Flight Passport" />
@@ -15,6 +27,21 @@
   </head>
   <body>
     <div class="app">
+      <button
+        id="theme-toggle"
+        type="button"
+        class="theme-toggle"
+        aria-label="Toggle dark mode"
+        aria-pressed="false"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M20.5 14.6c-1.1.4-2.3.6-3.5.6-5.5 0-10-4.5-10-10 0-1.2.2-2.4.6-3.5C4 3.3 1.5 7 1.5 11.3 1.5 17.2 6.3 22 12.2 22c4.3 0 8-2.5 9.7-6.1.2-.4-.2-.9-.6-.7z"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
+
       <section id="view-login" class="screen" aria-label="Sign in" hidden>
         <div class="prompt">
           <h1>Flight Passport</h1>
@@ -60,6 +87,7 @@
         <button class="tab is-active" type="button" data-view="add" aria-selected="true">Add Flight</button>
         <button class="tab" type="button" data-view="list" aria-selected="false">My Flights</button>
         <button class="tab" type="button" data-view="globe" aria-selected="false">Globe</button>
+        <button class="tab" type="button" data-view="stats" aria-selected="false">Stats</button>
       </nav>
 
       <main hidden>
@@ -125,6 +153,18 @@
             <div id="globe-detail" class="globe-detail" hidden role="status" aria-live="polite"></div>
           </div>
           <p id="globe-skipped" class="status" hidden></p>
+        </section>
+
+        <section id="view-stats" class="screen stats-screen" aria-label="My stats" hidden>
+          <div class="prompt">
+            <h1>My stats</h1>
+            <p>A look back at everywhere you've flown</p>
+          </div>
+          <p id="stats-empty" class="empty" hidden>No flights yet — add one to see your stats</p>
+          <div id="stats-wrap" hidden>
+            <div id="stats-grid" class="stats-grid"></div>
+            <dl id="stats-highlights" class="stats-highlights"></dl>
+          </div>
         </section>
       </main>
     </div>

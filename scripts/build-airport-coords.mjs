@@ -1,4 +1,5 @@
-// Generates data/airport-coords.json — a lat/lon lookup keyed by both IATA
+// Generates data/airport-coords.json (a lat/lon lookup) and
+// data/airport-country.json (an ISO country code lookup), both keyed by IATA
 // and ICAO codes, joined from the public-domain OurAirports dataset against
 // the airport codes already present in data/airports.json.
 //
@@ -9,7 +10,8 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CSV_URL = "https://davidmegginson.github.io/ourairports-data/airports.csv";
-const OUT_PATH = new URL("../data/airport-coords.json", import.meta.url);
+const COORDS_OUT_PATH = new URL("../data/airport-coords.json", import.meta.url);
+const COUNTRY_OUT_PATH = new URL("../data/airport-country.json", import.meta.url);
 
 function parseCsv(text) {
   const rows = [];
@@ -71,39 +73,56 @@ async function main() {
   const col = Object.fromEntries(header.map((name, idx) => [name, idx]));
 
   const coordsByCode = new Map();
+  const countryByCode = new Map();
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     if (row.length < header.length) continue;
     const lat = Number.parseFloat(row[col.latitude_deg]);
     const lon = Number.parseFloat(row[col.longitude_deg]);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
-    const point = [Math.round(lat * 1000) / 1000, Math.round(lon * 1000) / 1000];
+    const country = (row[col.iso_country] || "").trim().toUpperCase();
+    const point = Number.isFinite(lat) && Number.isFinite(lon)
+      ? [Math.round(lat * 1000) / 1000, Math.round(lon * 1000) / 1000]
+      : null;
     for (const key of [row[col.iata_code], row[col.icao_code], row[col.ident], row[col.gps_code]]) {
       const code = (key || "").trim().toUpperCase();
-      if (code && !coordsByCode.has(code)) coordsByCode.set(code, point);
+      if (!code) continue;
+      if (point && !coordsByCode.has(code)) coordsByCode.set(code, point);
+      if (country && !countryByCode.has(code)) countryByCode.set(code, country);
     }
   }
 
-  const out = {};
+  const coordsOut = {};
+  const countryOut = {};
   let matched = 0;
   for (const record of uniqueAirports.values()) {
     const iata = (record.i || "").toUpperCase();
     const icao = (record.o || "").toUpperCase();
     const point = coordsByCode.get(iata) || coordsByCode.get(icao);
-    if (!point) continue;
+    const country = countryByCode.get(iata) || countryByCode.get(icao);
+    if (!point && !country) continue;
     matched++;
-    if (iata) out[iata] = point;
-    if (icao) out[icao] = point;
+    if (point) {
+      if (iata) coordsOut[iata] = point;
+      if (icao) coordsOut[icao] = point;
+    }
+    if (country) {
+      if (iata) countryOut[iata] = country;
+      if (icao) countryOut[icao] = country;
+    }
   }
 
-  const keyCount = Object.keys(out).length;
-  console.log(`Matched ${matched} / ${uniqueAirports.size} unique airports (${keyCount} keys).`);
-  if (keyCount < 15000) {
-    throw new Error(`Expected ~15,598 keys, got ${keyCount} — dataset or parser likely changed.`);
+  const coordsKeyCount = Object.keys(coordsOut).length;
+  console.log(`Matched ${matched} / ${uniqueAirports.size} unique airports (${coordsKeyCount} coord keys).`);
+  if (coordsKeyCount < 15000) {
+    throw new Error(`Expected ~15,598 coord keys, got ${coordsKeyCount} — dataset or parser likely changed.`);
   }
 
-  await writeFile(OUT_PATH, JSON.stringify(out));
-  console.log(`Wrote ${OUT_PATH.pathname}`);
+  await writeFile(COORDS_OUT_PATH, JSON.stringify(coordsOut));
+  console.log(`Wrote ${COORDS_OUT_PATH.pathname}`);
+
+  const countryKeyCount = Object.keys(countryOut).length;
+  await writeFile(COUNTRY_OUT_PATH, JSON.stringify(countryOut));
+  console.log(`Wrote ${COUNTRY_OUT_PATH.pathname} (${countryKeyCount} keys)`);
 }
 
 main().catch((err) => {
