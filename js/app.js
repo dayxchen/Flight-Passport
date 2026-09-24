@@ -5,6 +5,8 @@ import { escapeHtml } from "./util.js";
 import { activateGlobe, deactivateGlobe, updateGlobe } from "./globe.js";
 import { initStats, updateStats } from "./stats.js";
 import { groupIntoTrips } from "./trips.js";
+import { mountFlightPhotos } from "./photo-ui.js";
+import { deleteAllFlightPhotos } from "./photos.js";
 import { initAuth, onAuthChange, sendMagicLink, signInWithGoogle, signOut } from "./auth.js";
 import { initThemeToggle } from "./theme.js";
 
@@ -393,17 +395,24 @@ function flightCard(flight, { inTrip = false } = {}) {
     </button>
     <div class="flight-extra" hidden>
       <dl class="details">${detailsMarkup(flight)}</dl>
+      <div class="photos-slot"></div>
       <button type="button" class="btn danger" data-delete="${flight.id}">Delete</button>
     </div>
   `;
 
   const summary = article.querySelector(".flight-summary");
   const extra = article.querySelector(".flight-extra");
+  const photosSlot = article.querySelector(".photos-slot");
+  let photosMounted = false;
   summary.addEventListener("click", () => {
     const open = extra.hidden;
     extra.hidden = !open;
     summary.setAttribute("aria-expanded", String(open));
     article.classList.toggle("is-open", open);
+    if (open && !photosMounted) {
+      photosMounted = true;
+      mountFlightPhotos(photosSlot, flight);
+    }
   });
 
   article.querySelector("[data-delete]").addEventListener("click", async () => {
@@ -414,6 +423,14 @@ function flightCard(flight, { inTrip = false } = {}) {
     } catch (error) {
       window.alert(error.message || "Couldn't delete that flight. Try again.");
       return;
+    }
+    // The flight row is already gone at this point, so a failure here just
+    // orphans its photo folder in storage rather than risking the reverse —
+    // wiping photos and then failing to delete the flight itself.
+    try {
+      await deleteAllFlightPhotos(flight.id);
+    } catch (error) {
+      console.error(error);
     }
     await renderList();
   });
